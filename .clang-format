@@ -1,0 +1,17 @@
+# C formatting for Stride. Matches the style of the existing Saddle C code:
+# 4-space indent, braces on the same line, 100-column limit.
+BasedOnStyle: LLVM
+Language: Cpp
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+PointerAlignment: Right
+SpaceBeforeParens: ControlStatements
+AlignAfterOpenBracket: Align
+IndentCaseLabels: false
+SortIncludes: false

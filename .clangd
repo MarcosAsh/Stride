@@ -1,0 +1,7 @@
+# Template headers (*_tmpl.h) are not self-contained translation units; they
+# are included by their .c wrappers with REAL/FN/etc. defined. clangd cannot
+# analyse them standalone, so suppress the noise.
+If:
+  PathMatch: .*_tmpl\.h
+Diagnostics:
+  Suppress: "*"
