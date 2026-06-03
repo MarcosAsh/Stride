@@ -49,3 +49,22 @@ void FN(stride_adam_step)(REAL *params, REAL *m, REAL *v, const REAL *grads,
         params[i] -= lr * m_hat / (SQRT(v_hat) + eps);
     }
 }
+
+void FN(stride_axpy)(REAL *y, const REAL *x, size_t n, REAL a) {
+    for (size_t i = 0; i < n; i++)
+        y[i] += a * x[i];
+}
+
+/* Plain sequential accumulation. This is the reference the lane-split asm gets
+ * measured against, not matched bit for bit. */
+REAL FN(stride_dot)(const REAL *x, const REAL *y, size_t n) {
+    REAL acc = 0;
+    for (size_t i = 0; i < n; i++)
+        acc += x[i] * y[i];
+    return acc;
+}
+
+void FN(stride_scal)(REAL *x, size_t n, REAL a) {
+    for (size_t i = 0; i < n; i++)
+        x[i] *= a;
+}

@@ -43,7 +43,10 @@ Targets I'm holding myself to for the comparisons that aren't done yet:
 - [x] **M1** checkasm-style harness: C vs asm, ULP checks, RDTSC timing, P-core
   pinning, guarded buffers, and a self-test that proves it catches broken kernels.
 - [x] **M2** fused Adam in AVX2, bit-exact, 4.5x (fp32) / 2.1x (fp64) over scalar C.
-- [ ] **M3** BLAS kernels (axpy, dot, scal, gemv) and a logistic regression objective.
+- [x] **M3** BLAS-1 in AVX2 (axpy, dot, scal), gemv on top, and a logistic
+  regression objective that trains through the dispatched kernels. dot hits
+  8-15x in cache; the harness checks it against a high-precision truth since
+  the lane-split sum is not bit-exact.
 - [ ] **M4** L-BFGS with two-loop recursion and Armijo backtracking.
 - [ ] **M5** non-temporal stores and an unroll/accumulator sweep; AVX-512 paths
   checked under Intel SDE as a stretch goal.

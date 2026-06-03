@@ -17,4 +17,11 @@ void stride_adam_step_f64_avx2(double *params, double *m, double *v, const doubl
                                size_t n, double lr, double beta1, double beta2, double eps,
                                double bc1, double bc2);
 
+void stride_axpy_f32_avx2(float *y, const float *x, size_t n, float a);
+void stride_axpy_f64_avx2(double *y, const double *x, size_t n, double a);
+float stride_dot_f32_avx2(const float *x, const float *y, size_t n);
+double stride_dot_f64_avx2(const double *x, const double *y, size_t n);
+void stride_scal_f32_avx2(float *x, size_t n, float a);
+void stride_scal_f64_avx2(double *x, size_t n, double a);
+
 #endif /* STRIDE_KERNELS_X86_H */

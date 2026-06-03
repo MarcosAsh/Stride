@@ -40,10 +40,23 @@ void stride_kernel_table_init(stride_kernel_table *t, int cpu_flags) {
     /* ISA-specific kernels override the C pointers when the CPU supports the
      * instructions. M2 adds the fused Adam step in AVX2; the BLAS-1 kernels
      * and the rest follow in later milestones. */
+    t->axpy_f32 = stride_axpy_f32;
+    t->axpy_f64 = stride_axpy_f64;
+    t->dot_f32 = stride_dot_f32;
+    t->dot_f64 = stride_dot_f64;
+    t->scal_f32 = stride_scal_f32;
+    t->scal_f64 = stride_scal_f64;
+
 #if defined(__x86_64__)
     if (cpu_flags & STRIDE_CPU_AVX2) {
         t->adam_step_f32 = stride_adam_step_f32_avx2;
         t->adam_step_f64 = stride_adam_step_f64_avx2;
+        t->axpy_f32 = stride_axpy_f32_avx2;
+        t->axpy_f64 = stride_axpy_f64_avx2;
+        t->dot_f32 = stride_dot_f32_avx2;
+        t->dot_f64 = stride_dot_f64_avx2;
+        t->scal_f32 = stride_scal_f32_avx2;
+        t->scal_f64 = stride_scal_f64_avx2;
     }
 #endif
     (void)cpu_flags;

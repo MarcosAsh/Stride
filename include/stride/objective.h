@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "stride/kernels.h"
+
 /*
  * An objective is anything with a value and a gradient over R^n.
  *
@@ -67,5 +69,43 @@ typedef struct {
 
 stride_objective_f64 stride_quadratic_f64(size_t n, const stride_quadratic_ctx_f64 *ctx);
 stride_objective_f32 stride_quadratic_f32(size_t n, const stride_quadratic_ctx_f32 *ctx);
+
+/*
+ * Logistic regression, the real ML objective.
+ *
+ *   loss(w) = (1/m) sum_i [ softplus(x_i . w) - y_i (x_i . w) ] + (l2/2)|w|^2
+ *   grad(w) = (1/m) X^T (sigmoid(Xw) - y) + l2 w
+ *
+ * X is m x n row-major, y holds labels in {0,1}. The gradient is one gemv
+ * (Xw) and one gemv_t (X^T r), so this is the objective that drives the
+ * BLAS-2 path. kt selects the kernels gemv rides on (NULL = C kernels).
+ *
+ * z and r are caller-provided scratch of length m. The ctx and every buffer
+ * it points at must outlive the objective.
+ */
+typedef struct {
+    const float *X;
+    const float *y;
+    size_t m;
+    size_t n;
+    float l2;
+    const stride_kernel_table *kt;
+    float *z;
+    float *r;
+} stride_logreg_ctx_f32;
+
+typedef struct {
+    const double *X;
+    const double *y;
+    size_t m;
+    size_t n;
+    double l2;
+    const stride_kernel_table *kt;
+    double *z;
+    double *r;
+} stride_logreg_ctx_f64;
+
+stride_objective_f32 stride_logreg_f32(const stride_logreg_ctx_f32 *ctx);
+stride_objective_f64 stride_logreg_f64(const stride_logreg_ctx_f64 *ctx);
 
 #endif /* STRIDE_OBJECTIVE_H */

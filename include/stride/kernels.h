@@ -57,6 +57,29 @@ void stride_adam_step_f64(double *params, double *m, double *v, const double *gr
                           double bc1, double bc2);
 
 /*
+ * BLAS-1: the primitives L-BFGS leans on (M4) and the building blocks for
+ * gemv below.
+ *
+ * axpy and scal are element-wise, so their asm stays bit-exact with the C
+ * reference. dot is a reduction: the asm splits the sum across lane
+ * accumulators and uses FMA, which reorders the arithmetic, so it is NOT
+ * bit-exact. The harness checks dot against a higher-precision truth with an
+ * error bound instead of demanding an exact match.
+ */
+
+/* y[i] += a * x[i] */
+void stride_axpy_f32(float *y, const float *x, size_t n, float a);
+void stride_axpy_f64(double *y, const double *x, size_t n, double a);
+
+/* returns sum_i x[i] * y[i] */
+float stride_dot_f32(const float *x, const float *y, size_t n);
+double stride_dot_f64(const double *x, const double *y, size_t n);
+
+/* x[i] *= a */
+void stride_scal_f32(float *x, size_t n, float a);
+void stride_scal_f64(double *x, size_t n, double a);
+
+/*
  * Kernel dispatch.
  *
  * One function pointer type per kernel, plus a table holding the chosen
@@ -79,6 +102,12 @@ typedef void (*stride_adam_step_f32_fn)(float *, float *, float *, const float *
                                         float, float, float, float, float);
 typedef void (*stride_adam_step_f64_fn)(double *, double *, double *, const double *, size_t,
                                         double, double, double, double, double, double);
+typedef void (*stride_axpy_f32_fn)(float *, const float *, size_t, float);
+typedef void (*stride_axpy_f64_fn)(double *, const double *, size_t, double);
+typedef float (*stride_dot_f32_fn)(const float *, const float *, size_t);
+typedef double (*stride_dot_f64_fn)(const double *, const double *, size_t);
+typedef void (*stride_scal_f32_fn)(float *, size_t, float);
+typedef void (*stride_scal_f64_fn)(double *, size_t, double);
 
 typedef struct {
     stride_sgd_step_f32_fn sgd_step_f32;
@@ -89,8 +118,34 @@ typedef struct {
     stride_rmsprop_step_f64_fn rmsprop_step_f64;
     stride_adam_step_f32_fn adam_step_f32;
     stride_adam_step_f64_fn adam_step_f64;
+    stride_axpy_f32_fn axpy_f32;
+    stride_axpy_f64_fn axpy_f64;
+    stride_dot_f32_fn dot_f32;
+    stride_dot_f64_fn dot_f64;
+    stride_scal_f32_fn scal_f32;
+    stride_scal_f64_fn scal_f64;
 } stride_kernel_table;
 
 void stride_kernel_table_init(stride_kernel_table *t, int cpu_flags);
+
+/*
+ * gemv, BLAS-2, row-major.
+ *
+ * stride_gemv:   y = A * x,   A is rows x cols, x has cols, y has rows.
+ * stride_gemv_t: y = A^T * x, A is rows x cols, x has rows, y has cols.
+ *
+ * Both take a kernel table so they ride on the dispatched dot/axpy (pass NULL
+ * to fall back to the C kernels). gemv is a row of dot products, gemv_t is a
+ * sum of axpys, so this is where dot and axpy earn their keep. The logistic
+ * regression gradient is one of each.
+ */
+void stride_gemv_f32(const stride_kernel_table *t, const float *A, const float *x, float *y,
+                     size_t rows, size_t cols);
+void stride_gemv_f64(const stride_kernel_table *t, const double *A, const double *x, double *y,
+                     size_t rows, size_t cols);
+void stride_gemv_t_f32(const stride_kernel_table *t, const float *A, const float *x, float *y,
+                       size_t rows, size_t cols);
+void stride_gemv_t_f64(const stride_kernel_table *t, const double *A, const double *x, double *y,
+                       size_t rows, size_t cols);
 
 #endif /* STRIDE_KERNELS_H */

@@ -18,18 +18,21 @@ BUILD := build
 
 LIB_SRCS := src/cpu/cpu.c \
             src/kernels/kernels.c \
+            src/blas/gemv.c \
             src/objectives/objectives.c \
+            src/objectives/logreg.c \
             src/solvers/solvers.c
 LIB_OBJS := $(LIB_SRCS:%.c=$(BUILD)/%.o)
 
 # hand written asm kernels, only on x86_64
-ASM_SRCS := src/kernels/x86/adam_avx2.asm
+ASM_SRCS := src/kernels/x86/adam_avx2.asm \
+            src/kernels/x86/blas1_avx2.asm
 ASM_OBJS := $(ASM_SRCS:%.asm=$(BUILD)/%.o)
 LIB_OBJS += $(ASM_OBJS)
 
 LIB := $(BUILD)/libstride.a
 
-TEST_SRCS := tests/test_gradients.c tests/test_solvers.c
+TEST_SRCS := tests/test_gradients.c tests/test_solvers.c tests/test_logreg.c
 TEST_BINS := $(TEST_SRCS:tests/%.c=$(BUILD)/%)
 
 all: $(LIB)
@@ -55,8 +58,10 @@ test: $(TEST_BINS) $(BUILD)/checkasm
 	@$(BUILD)/checkasm --selftest
 
 # checkasm harness, correctness checks plus kernel benchmarks
-CHECKASM_SRCS := tests/checkasm/checkasm.c tests/checkasm/check_kernels.c
-CHECKASM_HDRS := tests/checkasm/checkasm.h tests/checkasm/check_kernels_tmpl.h
+CHECKASM_SRCS := tests/checkasm/checkasm.c tests/checkasm/check_kernels.c \
+                 tests/checkasm/check_blas.c
+CHECKASM_HDRS := tests/checkasm/checkasm.h tests/checkasm/check_kernels_tmpl.h \
+                 tests/checkasm/check_blas_tmpl.h
 
 $(BUILD)/checkasm: $(CHECKASM_SRCS) $(CHECKASM_HDRS) $(LIB)
 	@mkdir -p $(dir $@)
@@ -87,7 +92,9 @@ clean:
 $(LIB_SRCS:%.c=$(BUILD)/%.o): include/stride/cpu.h include/stride/kernels.h \
     include/stride/objective.h include/stride/solver.h
 $(BUILD)/src/kernels/kernels.o: src/kernels/kernels_tmpl.h src/kernels/x86/kernels_x86.h
+$(BUILD)/src/blas/gemv.o: src/blas/gemv_tmpl.h
 $(BUILD)/src/objectives/objectives.o: src/objectives/objectives_tmpl.h
+$(BUILD)/src/objectives/logreg.o: src/objectives/logreg_tmpl.h
 $(BUILD)/src/solvers/solvers.o: src/solvers/solvers_tmpl.h
 $(TEST_BINS) $(BUILD)/test_saddle: tests/test_util.h include/stride/stride.h \
     include/stride/kernels.h include/stride/objective.h include/stride/solver.h

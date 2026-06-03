@@ -410,7 +410,9 @@ int main(int argc, char **argv) {
      * its passes mean anything. */
     if (opts.selftest) {
         printf("\nself-test (every broken kernel must be caught):\n");
-        if (checkasm_selftest(&ref, &opts)) {
+        int st = checkasm_selftest(&ref, &opts);
+        st |= checkasm_selftest_blas(&ref, &opts);
+        if (st) {
             printf("\ncheckasm: SELF-TEST FAILED\n");
             return 1;
         }
@@ -442,6 +444,7 @@ int main(int argc, char **argv) {
 
         printf("\nchecking %s implementations:\n", levels[l].name);
         checkasm_check_kernels(&ref, &t, levels[l].name, &opts);
+        checkasm_check_blas(&ref, &t, levels[l].name, &opts);
     }
 
     /* Benchmarks. */
@@ -449,6 +452,7 @@ int main(int argc, char **argv) {
         printf("\nbenchmarks (TSC ticks, best of repeated runs):\n");
         checkasm_bench_kernels(&ref, NULL, "c", &opts);
         checkasm_bench_baselines(&ref, &opts);
+        checkasm_bench_blas(&ref, NULL, "c", &opts);
 
         for (size_t l = 0; l < sizeof(levels) / sizeof(levels[0]); l++) {
             if ((cpu & levels[l].flags) != levels[l].flags)
@@ -458,6 +462,7 @@ int main(int argc, char **argv) {
             if (!memcmp(&t, &ref, sizeof(t)))
                 continue;
             checkasm_bench_kernels(&t, &ref, levels[l].name, &opts);
+            checkasm_bench_blas(&t, &ref, levels[l].name, &opts);
         }
 
         checkasm_finish_bench(&opts);

@@ -107,6 +107,14 @@ void checkasm_bench_kernels(const stride_kernel_table *t, const stride_kernel_ta
 void checkasm_check_baselines(const stride_kernel_table *ref, const checkasm_opts *opts);
 void checkasm_bench_baselines(const stride_kernel_table *ref, const checkasm_opts *opts);
 
+/* ---- BLAS-1 checks (check_blas.c) ---- */
+
+void checkasm_check_blas(const stride_kernel_table *ref, const stride_kernel_table *new,
+                         const char *impl, const checkasm_opts *opts);
+void checkasm_bench_blas(const stride_kernel_table *t, const stride_kernel_table *skip_same,
+                         const char *impl, const checkasm_opts *opts);
+int checkasm_selftest_blas(const stride_kernel_table *ref, const checkasm_opts *opts);
+
 /* Harness self-test: deliberately broken kernels must be caught.
  * Returns 0 if everything was caught, 1 otherwise. */
 int checkasm_selftest(const stride_kernel_table *ref, const checkasm_opts *opts);
