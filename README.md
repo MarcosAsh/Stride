@@ -47,7 +47,9 @@ Targets I'm holding myself to for the comparisons that aren't done yet:
   regression objective that trains through the dispatched kernels. dot hits
   8-15x in cache; the harness checks it against a high-precision truth since
   the lane-split sum is not bit-exact.
-- [ ] **M4** L-BFGS with two-loop recursion and Armijo backtracking.
+- [x] **M4** L-BFGS with two-loop recursion and Armijo backtracking, running
+  its dot/axpy/scal hot path on the AVX2 kernels. O(sqrt(kappa)) iterations on
+  a conditioned quadratic, no per-problem tuning.
 - [ ] **M5** non-temporal stores and an unroll/accumulator sweep; AVX-512 paths
   checked under Intel SDE as a stretch goal.
 - [ ] **M6** Saddle bridge: animate real Stride solver runs.

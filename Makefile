@@ -21,7 +21,8 @@ LIB_SRCS := src/cpu/cpu.c \
             src/blas/gemv.c \
             src/objectives/objectives.c \
             src/objectives/logreg.c \
-            src/solvers/solvers.c
+            src/solvers/solvers.c \
+            src/solvers/lbfgs.c
 LIB_OBJS := $(LIB_SRCS:%.c=$(BUILD)/%.o)
 
 # hand written asm kernels, only on x86_64
@@ -32,7 +33,7 @@ LIB_OBJS += $(ASM_OBJS)
 
 LIB := $(BUILD)/libstride.a
 
-TEST_SRCS := tests/test_gradients.c tests/test_solvers.c tests/test_logreg.c
+TEST_SRCS := tests/test_gradients.c tests/test_solvers.c tests/test_logreg.c tests/test_lbfgs.c
 TEST_BINS := $(TEST_SRCS:tests/%.c=$(BUILD)/%)
 
 all: $(LIB)
@@ -96,6 +97,7 @@ $(BUILD)/src/blas/gemv.o: src/blas/gemv_tmpl.h
 $(BUILD)/src/objectives/objectives.o: src/objectives/objectives_tmpl.h
 $(BUILD)/src/objectives/logreg.o: src/objectives/logreg_tmpl.h
 $(BUILD)/src/solvers/solvers.o: src/solvers/solvers_tmpl.h
+$(BUILD)/src/solvers/lbfgs.o: src/solvers/lbfgs_tmpl.h
 $(TEST_BINS) $(BUILD)/test_saddle: tests/test_util.h include/stride/stride.h \
     include/stride/kernels.h include/stride/objective.h include/stride/solver.h
 
